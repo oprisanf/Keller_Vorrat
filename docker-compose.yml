@@ -1,0 +1,62 @@
+version: "3.9"
+
+services:
+  fastapi_service:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    hostname: fastapi_service
+    container_name: fastapi_service
+    depends_on:
+      - db_postgres
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./:/home/app
+    restart: always
+    networks:
+      - fastapitest_keller_fastapi
+      - fastapitest_keller_frontend
+
+  streamlit_service:
+    build:
+      context: ./
+      dockerfile: DockerStreamlit
+    hostname: streamlit_service
+    container_name: streamlit_service
+    depends_on:
+      - fastapi_service
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./:/home/app
+    restart: always
+    networks:
+      - fastapitest_keller_frontend
+
+  db_postgres:
+    image: postgres:14.3-alpine
+    hostname: db_postgres
+    container_name: db_postgres
+    restart: on-failure
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-postgres:/var/lib/postgresql/data
+    networks:
+      - fastapitest_keller_fastapi
+
+volumes:
+  db-postgres:
+    driver: local
+
+networks:
+  fastapitest_keller_fastapi:
+    driver: bridge
+  fastapitest_keller_frontend:
+    driver: bridge

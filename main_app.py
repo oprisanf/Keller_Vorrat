@@ -27,10 +27,9 @@ def expired_column_color(val: date):
     return f'color:{color}'
 
 choice = st.selectbox("What operation do you want to run?",
-                      ("Choose action","Gett all","Get by name", "Put","Post","Delete"))
-
+                      ("Choose action","Get all","Get by name", "Put","Post","Delete"))
 if choice == "Get all":
-    response = requests.get("http://fastapi_service:8000/items")
+    response = requests.get("http://localhost:8000/items")
     data = response.json()
     df = pd.DataFrame(data)
     df.set_index('id',inplace=True)
@@ -41,7 +40,7 @@ if choice == "Get all":
 if choice == "Get by name":
     item_name = st.text_input(label='Enter Item Name', value='Item Name')
     if st.button("Get Item"):
-        response = requests.get(f"http://fastapi_service:8000/item/{item_name}")
+        response = requests.get(f"http://localhost:8000/item/{item_name}")
         
         if response.status_code == 200:
             data = response.json()
@@ -61,14 +60,14 @@ if choice == "Post":
         "tag": st.text_input(label='tag')
     }
     if st.button("Add Item"):
-        response = requests.post("http://fastapi_service:8000/item/", json=inputs)
+        response = requests.post("http://localhost:8000/item/", json=inputs)
                 
         st.write(response)# if response.status_code == 200 
         
 if choice == "Delete":
     item_id = st.number_input(label="Enter product id")
     if st.button('Delete now product'):
-        url = f"http://fastapi_service:8000/item/{item_id}"  # Properly format the URL
+        url = f"http://localhost:8000/item/{item_id}"  # Properly format the URL
         response = requests.delete(url)            
         if response == 200:
             data = response.json

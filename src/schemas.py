@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel,EmailStr,Field
 from datetime import date,timedelta
 from typing import List, Optional
 
@@ -16,13 +16,13 @@ class ItemCreate(ItemBase):
     pass
 
 class Item(ItemBase):
-    # item_id:Optional[int]
-    # owner_id: int
+    item_id:Optional[int]
+    owner_id: int
     class Config:
         orm_mode = True
 
 class UserBase(BaseModel):
-    email: str
+    email: EmailStr | None = Field(default=None)
 
 
 class UserCreate(UserBase):

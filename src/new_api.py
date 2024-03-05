@@ -1,8 +1,10 @@
 from fastapi import FastAPI, HTTPException, Depends
-import crud, models, schemas
+import crud
+import models
+import schemas
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine
-from typing import List 
+from typing import List
 import requests
 from prometheus_fastapi_instrumentator import Instrumentator
 
@@ -12,7 +14,7 @@ models.Base.metadata.create_all(bind=engine)
 Instrumentator().instrument(app).expose(app)
 
 
-#Dependency
+# Dependency
 def get_db():
     db = SessionLocal()
     try:
@@ -46,22 +48,27 @@ def get_db():
 async def root():
     return {"message": "Hello Vorrat Master"}
 
+
 @app.get("/items", response_model=List[schemas.Item])
 async def get_items(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    items = crud.get_items(db,skip=skip, limit=limit)
+    items = crud.get_items(db, skip=skip, limit=limit)
     return items
+
 
 @app.get("/item/{item_name}", response_model=List[schemas.Item])
-async def get_item(item_name: str,db: Session = Depends(get_db)):
-    items = crud.get_item_by_name (db,item_name)
+async def get_item(item_name: str, db: Session = Depends(get_db)):
+    
+    items = crud.get_item_by_name(db, item_name)
     if not items:
-        return {'message':'no Item with id:{item_name} found'}
+        raise HTTPException(
+            status_code=404, detail='Item id:{item_name} not found')
     return items
 
+
 @app.post("/item/", response_model=schemas.Item)
-async def create_item(item: schemas.ItemCreate,db: Session = Depends(get_db)):
+async def create_item(item: schemas.ItemCreate, db: Session = Depends(get_db)):
     try:
-        return  crud.create_user_item(db,item=item)
+        return crud.create_user_item(db, item=item)
     except crud.DuplicateError as e:
         print(e)
         return None
@@ -81,13 +88,5 @@ async def create_item(item: schemas.ItemCreate,db: Session = Depends(get_db)):
 
 @app.delete("/item/{item_id}")
 async def delete_item(item_id: int, db: Session = Depends(get_db)):
-    return crud.delete_user_item(db=db,item_id=item_id)
-   
-    # return{"message":"{existing_item} has been succesfully deleted"}
-
-
-# def find_item_by_id(item_id: int):
-#     for item in item:
-#         if item.item_id == item_id:
-#             return item
-#     return None
+    return crud.delete_user_item(db=db, item_id=item_id)
+  
